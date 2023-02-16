@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Raza {
+  id          Int         @id @default(autoincrement())
+  nombre      String      @unique
+  tipoMascota TipoMascota @relation(fields: [tipoId], references: [id])
+  tipoId      Int
+  Mascota     Mascota[]
+}
+
+model Veterinaria {
+  id        Int       @id @default(autoincrement())
+  nombre    String
+  ubicacion String
+  Usuario   Usuario[]
+}
+
+model Mascota {
+
+  id              Int         @id @default(autoincrement())
+  nombre          String
+  fechaNacimiento DateTime    @default(now())
+  genero          Genero
+  historia        Historia?
+  tipo            TipoMascota @relation(fields: [tipoId], references: [id])
+  tipoId          Int
+  usuario         Usuario     @relation(fields: [usuarioId], references: [id])
+  usuarioId       Int
+  raza            Raza        @relation(fields: [razaId], references: [id])
+  razaId          Int
+}
+
+model TipoMascota {
+  id      Int       @id @default(autoincrement())
+  nombre  String    @unique
+  razas   Raza[]
+  mascota Mascota[]
+}
+
+model Usuario {
+
+  id            Int         @id @default(autoincrement())
+  nombre        String
+  email         String      @unique
+  password      String
+  telefono      String
+  direccion     String
+  role          Role        @default(USER)
+  veterinaria   Veterinaria @relation(fields: [veterinariaId], references: [id])
+  veterinariaId Int
+
+  Mascota Mascota[]
+}
+
+model Historia {
+  id            Int      @id @default(autoincrement())
+  fechaCreacion DateTime @default(now())
+  mascota       Mascota  @relation(fields: [mascotaId], references: [id])
+  mascotaId     Int      @unique
+  Visita        Visita[]
+}
+
+model Visita {
+  id          Int      @id @default(autoincrement())
+  fecha       DateTime @default(now())
+  descripcion String
+  formula     String
+  historia    Historia @relation(fields: [historiaId], references: [id])
+  historiaId  Int
+}
+
+enum Genero {
+  MACHO
+  HEMBRA
+}
+
+enum Role {
+  USER
+  ADMIN
+}
